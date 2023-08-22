@@ -1,0 +1,13 @@
+{
+	"url":"postgresql://postgres:3KgimewrQpP5KBml0kB4@containers-us-west-186.railway.app:6624/railway",
+	"database": "chatApplication",
+	"username": "postgres",
+	"password": "123456",
+	"dialect": "postgres",
+	"define": {
+	  "freezeTableName": "true",
+	  "paranoid": "true"
+	},
+	"operatorsAliases": false,
+	"logging": false
+  }
