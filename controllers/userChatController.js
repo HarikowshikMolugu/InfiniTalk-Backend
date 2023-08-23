@@ -22,7 +22,7 @@ exports.addChat = async (req, res) => {
   try {
       const { userId, chattedUserId } = req.params;
       const { message } = req.body;
-
+      
       // Generate a random IV for this message
       const iv = crypto.randomBytes(16).toString('hex');
 
@@ -88,75 +88,100 @@ function decryptMessage(encryptedMessage, secretKey, iv) {
 
 
 exports.getChatList = async (req, res) => {
-  try {
+    try {
       const { userId } = req.params;
-
+  
       const chattedUserIds = await Chat.findAll({
-          where: { userid: userId },
-          attributes: ['chatteduserid'],
-          raw: true
+        where: { userid: userId },
+        attributes: ['id','chatteduserid', 'status','message','createdat','iv'],
+        raw: true
       });
-
+     
+  
       const UserIds = await Chat.findAll({
-          where: { chatteduserid: userId },
-          attributes: ['userid'],
-          raw: true
+        where: { chatteduserid: userId },
+        attributes: ['id','userid', 'status','message','createdat','iv'],
+        raw: true
       });
+      const chattedUserIds1 = chattedUserIds.map(item => ({
+        ...item,
+        side: 'right'
+      }));
+      const UserIds1 = UserIds.map(item => ({
+        ...item,
+        side: 'left'
+      }));
+      const filteredChattedUserIds1 = chattedUserIds1.reduce((acc, current) => {
+        const existingEntry = acc.find(item => item.chatteduserid === current.chatteduserid);
+        if (!existingEntry || existingEntry.id < current.id) {
+          // If no existing entry or the current entry has a higher id, replace it
+          return [...acc.filter(item => item.chatteduserid !== current.chatteduserid), current];
+        }
+        return acc;
+      }, []);
+      
+      const filteredUserIds1 = UserIds1.reduce((acc, current) => {
+        const existingEntry = acc.find(item => item.userid === current.userid);
+        if (!existingEntry || existingEntry.id < current.id) {
+          // If no existing entry or the current entry has a higher id, replace it
+          return [...acc.filter(item => item.userid !== current.userid), current];
+        }
+        return acc;
+      }, []);
+      
+      // Find and keep the entry with the greater id when chatteduserid matches userid
+const combinedData = [...filteredChattedUserIds1, ...filteredUserIds1].reduce((acc, current) => {
+    const existingEntry = acc.find(item => item.chatteduserid === current.userid);
+    if (existingEntry) {
+      if (existingEntry.id < current.id) {
+        // If current entry has a higher id, replace the existing entry
+        return [...acc.filter(item => item !== existingEntry), current];
+      }
+    } else {
+      // If no match found, add the current entry to the accumulator
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+  
+  // Sort the combinedData in descending order of id
+  combinedData.sort((a, b) => b.id - a.id);
+  
 
-      const allUserIds = [
-          ...new Set([...chattedUserIds.map(item => item.chatteduserid), ...UserIds.map(item => item.userid)])
-      ];
 
-      const lastmsgs = await Promise.all(
-          allUserIds.map(async chattedUserId => {
-              const latestMessageEntry = await Chat.findOne({
-                  where: {
-                      [Op.or]: [
-                          { userid: userId, chatteduserid: chattedUserId },
-                          { userid: chattedUserId, chatteduserid: userId }
-                      ]
-                  },
-                  order: [['id', 'DESC']], // Get the latest message
-                  limit: 1,
-                  raw: true
-              });
-
-              return latestMessageEntry;
-          })
-      );
-
-      const chattedUserData = await Promise.all(
-          allUserIds.map(async (chattedUserId, index) => {
-              const userData = await UserModel.findOne({
-                  where: { id: chattedUserId },
-                  attributes: ['id', 'username']
-              });
-
-              return {
-                  ...userData.toJSON(),
-                  latestMessage: lastmsgs[index] ? decryptMessage(lastmsgs[index].message, secretKey, lastmsgs[index].iv) : '',
-                  latestMessageCreatedAt: lastmsgs[index] ? lastmsgs[index].createdat : ''
-              };
-          })
-      );
-
-      // Order chattedUserData based on the latest message's created time
-      chattedUserData.sort((a, b) => {
-          const aParts = a.latestMessageCreatedAt.split(/[- :]/);
-          const bParts = b.latestMessageCreatedAt.split(/[- :]/);
-          
-          const aDate = new Date(aParts[2], aParts[1] - 1, aParts[0], aParts[3], aParts[4], aParts[5]);
-          const bDate = new Date(bParts[2], bParts[1] - 1, bParts[0], bParts[3], bParts[4], bParts[5]);
-          
-          return bDate - aDate;
+  const decryptedData = await Promise.all(
+    combinedData.map(async (item) => {
+      const decryptedMessage = decryptMessage(item.message, secretKey, item.iv);
+      const user = await UserModel.findOne({
+        where: { id: item.chatteduserid || item.userid },
+        attributes: ['username']
       });
-
-      res.status(200).json({ chattedUserData });
-  } catch (error) {
+      
+      return {
+        ...item,
+        message: decryptedMessage,
+        username: user ? user.username : ''
+      };
+    })
+  );
+  
+  const decryptedDataWithRenamedId = decryptedData.map(item => {
+    const { id, userid, chatteduserid, ...rest } = item;
+    return {
+      id:  chatteduserid || userid,
+      ...rest
+    };
+  });
+  
+  
+  
+      res.status(200).json({"data":decryptedDataWithRenamedId });
+    } catch (error) {
       res.status(500).json({ message: "Error in getting the chat List" });
       console.log(error);
-  }
-};
+    }
+  };
+  
   
 
 exports.searchFunction = async (req, res) => {
@@ -179,3 +204,17 @@ exports.searchFunction = async (req, res) => {
     console.log(error);
   }
 };
+
+
+exports.updateMessageSeen = async(req,res)=>{
+    const {chattedUserId, userId} = req.params;
+    try{
+       const updatedData = await Chat.update({status:'Seen'},{where:{userid:chattedUserId,chatteduserid:userId}})
+
+       res.status(200).json({message: "Unseen messages are changed to seen"});
+
+    }catch(error){
+        console.log(error);
+        res.status(500).json({message: "Error in updating unseen messages to seen"});
+    }
+}

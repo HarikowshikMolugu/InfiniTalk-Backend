@@ -36,7 +36,7 @@ User.sync().then(() => {
 });
 
 UserChat.sync().then(() => {
-  console.log("UserTodo Model synced");
+  console.log("UserChat Model synced");
 });
 const port = process.env.PORT || 3000;
 
