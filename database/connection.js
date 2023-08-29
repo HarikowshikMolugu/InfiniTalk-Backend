@@ -3,7 +3,7 @@ const config = require("../config/config.json");
 const sequelize = new Sequelize(
 	
 	config.URL,
-	dialect: 'postgres',
+	config.dialect,
 	config
 );
 
