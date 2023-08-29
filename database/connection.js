@@ -1,11 +1,8 @@
 const Sequelize = require("sequelize");
 const config = require("../config/config.json");
-const sequelize = new Sequelize(
-	
-	config.URL,
-	config.dialect,
-	config
-);
+const sequelize = new Sequelize(config.URL, {
+  dialect: "postgres",
+});
 
 // Test the connection
 sequelize
