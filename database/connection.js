@@ -1,11 +1,9 @@
 const Sequelize = require("sequelize");
 const config = require("../config/config.json");
 const sequelize = new Sequelize(
-	config.url,
-	// config.database,
-	// config.username,
-	// config.password,
-	// config
+	
+	config.URL,
+	config
 );
 
 // Test the connection

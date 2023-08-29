@@ -1,5 +1,5 @@
 {
-	"url":"postgresql://postgres:3KgimewrQpP5KBml0kB4@containers-us-west-186.railway.app:6624/railway",
+	"URL":"postgres://default:A0WNIa9DvLPi@ep-rough-shape-68710479-pooler.ap-southeast-1.postgres.vercel-storage.com:5432/verceldb",
 	"database": "chatApplication",
 	"username": "postgres",
 	"password": "123456",
