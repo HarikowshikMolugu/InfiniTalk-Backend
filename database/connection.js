@@ -3,8 +3,7 @@ const config = require("../config/config.json");
 const sequelize = new Sequelize(
 	
 	config.URL,
-	config.dialect,
-	config
+	config.dialect
 );
 
 // Test the connection
