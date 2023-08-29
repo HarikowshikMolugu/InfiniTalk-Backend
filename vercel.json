@@ -8,14 +8,6 @@
     ],
     "routes": [
       {
-        "src": "/authenticationRoutes/(.*)",
-        "dest": "server.js"
-      },
-      {
-        "src": "/userChatRoutes/(.*)",
-        "dest": "server.js"
-      },
-      {
       "src": "/(.*)",
       "dest": "server.js"
     }
