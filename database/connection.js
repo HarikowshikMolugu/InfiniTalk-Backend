@@ -3,7 +3,8 @@ const config = require("../config/config.json");
 const sequelize = new Sequelize(
 	
 	config.URL,
-	config.dialect
+	dialect: 'postgres',
+	config
 );
 
 // Test the connection
