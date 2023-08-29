@@ -1,9 +1,8 @@
 {
 	"URL":"postgres://default:A0WNIa9DvLPi@ep-rough-shape-68710479-pooler.ap-southeast-1.postgres.vercel-storage.com:5432/verceldb",
-	"database": "verceldb",
-	"username": "default",
-	"password": "A0WNIa9DvLPi",
-	"host":"ep-rough-shape-68710479-pooler.ap-southeast-1.postgres.vercel-storage.com",
+	"database": "chatApplication",
+	"username": "postgres",
+	"password": "123456",
 	"dialect": "postgres",
 	"define": {
 	  "freezeTableName": "true",
