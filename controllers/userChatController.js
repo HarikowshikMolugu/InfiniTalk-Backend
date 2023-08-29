@@ -3,7 +3,7 @@ const moment = require("moment-timezone");
 const UserModel = require('../models/user');
 const { Op } = require('sequelize'); // Import Op (operators) from Sequelize
 require('dotenv').config({ path: '.env' });
-secretKey = process.env.SECRET_KEY;
+secretKey = "cacf91a445a75727ff0325b2425f3aa80c956522a0dbcfb6acc7c1625873032a$";
 console.log(secretKey);
 console.log("Secret key length:", Buffer.byteLength(secretKey, 'hex'));
 
